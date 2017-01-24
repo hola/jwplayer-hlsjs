@@ -1,0 +1,42 @@
+{
+  "name": "@hola.org/jwplayer-hlsjs",
+  "description": "hls.js provider for jwplayer",
+  "version": "0.0.1",
+  "license": "ISC",
+  "homepage": "https://github.com/hola/jwplayer-hlsjs",
+  "scripts": {
+    "build": "grunt",
+    "login": "c=`npm c ls`; test \"${c#*@hola}\" != \"$c\" || npm login --scope @hola.org",
+    "release": "run-s build login release:*",
+    "release:tag": "git tag v$npm_package_version",
+    "release:publish": "npm publish",
+    "release:pushtags": "git push --tags origin",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hola/jwplayer-hlsjs.git"
+  },
+  "main": "./dist/jwplayer.hlsjs.js",
+  "files": [
+    "Gruntfile.js",
+    "dist/",
+    "src/",
+    ".jshintrc"
+  ],
+  "dependencies": {
+    "eventemitter3": "^2.0.2"
+  },
+  "devDependencies": {
+    "browserify-derequire": "^0.9.4",
+    "browserify-versionify": "^1.0.6",
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-exorcise": "^2.1.1",
+    "load-grunt-tasks": "^3.5.2",
+    "npm-run-all": "^4.0.1"
+  }
+}

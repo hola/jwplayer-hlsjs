@@ -231,12 +231,38 @@ function HlsProv(id){
     }
     for (var e in video_listeners)
         video.addEventListener(e, wrap_gen(e), false);
+    function scaled_number(num){
+        if (num===undefined)
+            return '';
+        if (!num)
+            return '0';
+        var k = 1024;
+        var sizes = ['', 'K', 'M', 'G', 'T', 'P'];
+        var i = Math.floor(Math.log(num)/Math.log(k));
+        num /= Math.pow(k, i);
+        if (num<0.001)
+            return '0';
+        if (num>=k-1)
+            num = Math.trunc(num);
+        var str = num.toFixed(num<1 ? 3 : num<10 ? 2 : num<100 ? 1 : 0);
+        return str.replace(/\.0*$/, '')+sizes[i];
+    }
+    // XXX yurij: duplicate from videojs5-hlsjs to avoid deps
+    function level_label(level){
+        if (level.height)
+            return level.height+'p';
+        if (level.width)
+            return Math.round(level.width*9/16)+'p';
+        if (level.bitrate)
+            return scaled_number(level.bitrate)+'bps';
+        return 0;
+    }
     function get_levels(){
         // level 0 mimics native jw's hls provider behavior
         var levels = [{bitrate: 1, width: 1, height: 1, label: 'Auto'}];
         hls.levels.forEach(function(level){
             levels.push({bitrate: level.bitrate, height: level.height,
-                label: level.height+'p', width: level.width});
+                label: level_label(level), width: level.width});
         });
         return levels;
     }

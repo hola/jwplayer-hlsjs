@@ -1,14 +1,12 @@
 'use strict';
 var EventEmitter = require('eventemitter3');
-var Hls = window.Hls;
-var jwplayer = window.jwplayer;
 var E = module.exports = HlsProv;
 var callback;
 
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
 function HlsProv(id){
-    var jwe = jwplayer.events;
+    var jwe = window.jwplayer.events;
     function empty_fn(name){ return function(){}; }
     var _this = this;
     if (callback)
@@ -48,14 +46,14 @@ function HlsProv(id){
         if (_this.hls_state=='ready')
             _this.hls_state = 'idle';
         _this.level_cb = function(){
-            hls.off(Hls.Events.LEVEL_LOADED, _this.level_cb);
+            hls.off(window.Hls.Events.LEVEL_LOADED, _this.level_cb);
             _this.level_cb = undefined;
             _this.hls_state = 'ready';
             if (_this.hls_queued.play)
                 hls_play();
             _this.trigger(jwe.JWPLAYER_MEDIA_BUFFER_FULL);
         };
-        hls.on(Hls.Events.LEVEL_LOADED, _this.level_cb);
+        hls.on(window.Hls.Events.LEVEL_LOADED, _this.level_cb);
         hls.loadSource(src);
         if (!hls.media)
             _this.attachMedia();
@@ -109,7 +107,7 @@ function HlsProv(id){
     }
     var hls_params = {debug: false};
     this.ad_count = 0;
-    if (id && (jw = jwplayer(id)))
+    if (id && (jw = window.jwplayer(id)))
     {
         // XXX pavelki: counters for ad, need to make load deferred
         jw.on('adImpression', function(){
@@ -119,7 +117,7 @@ function HlsProv(id){
         jw.on('adSkipped', function(){ _this.ad_count--; });
         Object.assign(hls_params, jw.hola_config);
     }
-    hls = new Hls(hls_params);
+    hls = new window.Hls(hls_params);
     if (jw)
         jw.hls = hls;
     var _buffered, _duration, _position;
@@ -242,13 +240,13 @@ function HlsProv(id){
         });
         return levels;
     }
-    hls.on(Hls.Events.MANIFEST_LOADED, function(){
+    hls.on(window.Hls.Events.MANIFEST_LOADED, function(){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVELS, {
             currentQuality: hls.autoLevelEnabled ? 0 : hls.currentLevel+1,
             levels: get_levels()
         });
     });
-    hls.on(Hls.Events.LEVEL_SWITCH, function(e, data){
+    hls.on(window.Hls.Events.LEVEL_SWITCH, function(e, data){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED, {
             // level 0 is dummy for 'Auto' option in jwplayer's UI
             currentQuality: hls.manual_level==-1 ? 0 : data.level+1,
@@ -357,11 +355,11 @@ function HlsProv(id){
             this.setState('ready');
     };
     this.detachMedia = function(){
-        hls.trigger(Hls.Events.BUFFER_RESET);
+        hls.trigger(window.Hls.Events.BUFFER_RESET);
         hls.detachMedia();
         if (this.level_cb)
         {
-            hls.off(Hls.Events.LEVEL_LOADED, this.level_cb);
+            hls.off(window.Hls.Events.LEVEL_LOADED, this.level_cb);
             this.level_cb = undefined;
         }
         // XXX pavelki: hack to remove pending segments
@@ -388,7 +386,8 @@ function HlsProv(id){
 E.getName = function(){ return {name: 'dm/hls'}; };
 
 E.supports = function(src){
-    return !E.disabled && src.type=='hls' && Hls && Hls.isSupported(); };
+    return !E.disabled && src.type=='hls' && window.Hls &&
+        window.Hls.isSupported(); };
 
 E.register_cb = function(cb){ callback = cb; };
 

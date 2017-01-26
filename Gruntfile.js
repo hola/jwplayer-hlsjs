@@ -1,8 +1,7 @@
 'use strict';
 module.exports = function(grunt) {
-    var pkg = grunt.file.readJSON('package.json');
     grunt.initConfig({
-        pkg: pkg,
+        pkg: grunt.file.readJSON('package.json'),
         clean: {
             dist: ['dist/*'],
         },
@@ -16,12 +15,6 @@ module.exports = function(grunt) {
                     standalone: 'jwplayer_hls_provider',
                     debug: true,
                 },
-                transform: [
-                    ['browserify-versionify', {
-                        placeholder: '__VERSION__',
-                        version: pkg.version,
-                    }],
-                ],
                 plugin: ['browserify-derequire'],
             },
             dist: {

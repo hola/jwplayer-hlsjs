@@ -24,6 +24,9 @@
     "src/",
     ".jshintrc"
   ],
+  "browserify": {
+    "transform": ["browserify-versionify"]
+  },
   "dependencies": {
     "eventemitter3": "^2.0.2"
   },

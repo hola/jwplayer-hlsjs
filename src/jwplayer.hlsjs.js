@@ -1,7 +1,7 @@
 'use strict';
 var EventEmitter = require('eventemitter3');
 var E = module.exports = HlsProv;
-var callback;
+var callback, provider_attached = false, provider_disabled = false;
 
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
@@ -415,7 +415,22 @@ E.supports = function(src){
     return !E.disabled && src.type=='hls' && window.Hls &&
         window.Hls.isSupported(); };
 
-E.register_cb = function(cb){ callback = cb; };
+E.attach = function(cb){
+    provider_disabled = false;
+    if (!provider_attached) 
+    {
+        provider_attached = true;
+        callback = cb;
+        // XXX arik: unregister on error/fallback
+        window.jwplayer.api.registerProvider(this);
+    }
+};
+
+E.detach = function(){
+    // we don't remove provider from list, just set it as disabled so it will
+    // return false in supports()
+    provider_disabled = true;
+};
 
 E.VERSION = '__VERSION__';
 

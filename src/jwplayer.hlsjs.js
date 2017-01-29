@@ -352,7 +352,9 @@ function HlsProv(id){
     this.setCurrentQuality = function(level){
         if (level == hls.manual_level+1)
             return;
-        hls.loadLevel = hls.manual_level = level-1;
+        hls.manual_level = level-1;
+        if (!hls.hola_adaptive)
+            hls.loadLevel = hls.manual_level;
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED,
             {currentQuality: level, levels: get_levels()});
     };

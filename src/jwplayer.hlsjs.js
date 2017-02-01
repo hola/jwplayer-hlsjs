@@ -137,6 +137,17 @@ function HlsProv(id){
         }
         return duration;
     }
+    function get_duration_inf(){
+        return is_live() ? 1/0 : get_duration();
+    }
+    function is_live(){
+        var live, sc;
+        try {
+            sc = hls.streamController;
+            live = sc.levels[sc.level].details.live;
+        } catch(e){}
+        return live;
+    }
     function get_buffered(){
         var buf = video.buffered, dur = video.duration;
         if (!buf || !buf.length || dur<=0 || dur==Infinity)
@@ -148,7 +159,7 @@ function HlsProv(id){
             return;
         _buffered = buffered;
         _this.trigger(jwe.JWPLAYER_MEDIA_BUFFER, {bufferPercent: buffered*100,
-            position: pos, duration: duration});
+            position: pos, duration: get_duration_inf()});
     }
     var video_listeners = {
         durationchange: function(){
@@ -179,10 +190,10 @@ function HlsProv(id){
                 video.muted = true;
             }
             video.setAttribute('jw-loaded', 'meta');
-            var duration = get_duration();
-            _this.trigger(jwe.JWPLAYER_MEDIA_META, {duration: duration,
-                height: video.videoHeight, width: video.videoWidth});
-            _duration = duration;
+            _duration = get_duration();
+            _this.trigger(jwe.JWPLAYER_MEDIA_META, {duration:
+                get_duration_inf(), height: video.videoHeight,
+                width: video.videoWidth});
         },
         canplay: function(){ _this.trigger(jwe.JWPLAYER_MEDIA_BUFFER_FULL); },
         playing: function(){
@@ -218,7 +229,7 @@ function HlsProv(id){
             if (_this.state=='playing')
             {
                 _this.trigger(jwe.JWPLAYER_MEDIA_TIME, {position: _position,
-                    duration: _duration});
+                    duration: get_duration_inf()});
             }
         },
     };

@@ -17,7 +17,7 @@
     "type": "git",
     "url": "https://github.com/hola/jwplayer-hlsjs.git"
   },
-  "main": "./dist/jwplayer.hlsjs.js",
+  "main": "./src/jwplayer.hlsjs.js",
   "files": [
     "Gruntfile.js",
     "dist/",

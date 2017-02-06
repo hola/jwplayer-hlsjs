@@ -144,7 +144,7 @@ function HlsProv(id){
         var live, sc;
         try {
             sc = hls.streamController;
-            live = sc.levels[sc.level].details.live;
+            live = sc.levels[sc.currentLevel].details.live;
         } catch(e){}
         return live;
     }

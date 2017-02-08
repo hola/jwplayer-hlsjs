@@ -277,6 +277,22 @@ function HlsProv(id){
         });
         return levels;
     }
+    hls.on(window.Hls.Events.ERROR, function(event, data){
+        if (!data.fatal)
+            return;
+        var msg;
+        switch (data.details)
+        {
+        case window.Hls.ErrorDetails.MANIFEST_LOAD_ERROR:
+        case window.Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT:
+            msg = 'Cannot load M3U8: '+data.response.statusText;
+            break;
+        default:
+            msg = 'Error loading media: '+data.details;
+            break;
+        }
+        _this.trigger(jwe.JWPLAYER_MEDIA_ERROR, {message: msg});
+    });
     hls.on(window.Hls.Events.MANIFEST_LOADED, function(){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVELS, {
             currentQuality: hls.autoLevelEnabled ? 0 : hls.currentLevel+1,

@@ -62,6 +62,10 @@ function HlsProv(id){
         return sources &&
             sources.find(function(s){ return s.default; }) || sources[0];
     }
+    function _log(method, message){
+        if (_this.hls.hola_log && _this.hls.hola_log[method])
+            _this.hls.hola_log[method].call(_this.hls.hola_log, message);
+    }
     // XXX marka: jwplayer inherits provider from DefaultProvider, so it will
     // override our inheritance from EventEmitter, do it manually
     this.events = new EventEmitter();
@@ -105,7 +109,7 @@ function HlsProv(id){
             get: prop.get,
         });
     }
-    var hls_params = {debug: false};
+    var hls_params = {}, hola_log;
     this.ad_count = 0;
     if (id && (jw = window.jwplayer(id)))
     {
@@ -116,8 +120,17 @@ function HlsProv(id){
         jw.on('adComplete', function(){ _this.ad_count--; });
         jw.on('adSkipped', function(){ _this.ad_count--; });
         Object.assign(hls_params, jw.hola_config);
+        if (hls_params.debug!='undefined')
+        {
+            hola_log = hls_params.debug;
+            delete hls_params.debug;
+        }
     }
-    hls = new window.Hls(hls_params);
+    hls_params.debug = {};
+    ['debug', 'info', 'log', 'warn','error'].forEach(function(method){
+        hls_params.debug[method] = _log.bind(null, method); });
+    this.hls = hls = new window.Hls(hls_params);
+    hls.hola_log = hola_log;
     if (jw)
         jw.hls = hls;
     var _buffered, _duration, _position;

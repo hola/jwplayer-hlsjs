@@ -18,7 +18,7 @@ function HlsProv(id){
         {
             // XXX pavelki: hack to use our start position
             hls.streamController.startPosition = 0;
-            hls.streamController.startLoad(new_pos||0);
+            hls.startLoad(new_pos||0);
         }
         if (!new_pos)
             return;

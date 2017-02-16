@@ -453,9 +453,26 @@ function HlsProv(id){
 
 E.getName = function(){ return {name: 'dm/hls'}; };
 
+// XXX yurij: copied from zjwplayer3.js to not depend on our code
+function get_player_instances(){
+    var i = 0, res = [], jw;
+    // XXX marka: if no player instanced yet, jw returns {registerPlugin: ...}
+    while ((jw = window.jwplayer(i++)) && Object.keys(jw).length>1)
+        res.push(jw);
+    return res;
+}
 E.supports = function(src){
+    var is_ad = get_player_instances().every(function(j){
+        return j.getPlaylist().every(function(p){
+            return (p.allSources||p.sources).every(function(s){
+                return s.file!=src.file; });
+        });
+    });
+    if (is_ad)
+        return false;
     return !E.disabled && src.type=='hls' && window.Hls &&
-        window.Hls.isSupported(); };
+        window.Hls.isSupported();
+};
 
 E.attach = function(cb){
     provider_disabled = false;

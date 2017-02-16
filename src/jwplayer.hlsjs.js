@@ -468,7 +468,7 @@ E.supports = function(src){
                 return s.file!=src.file; });
         });
     });
-    if (is_ad)
+    if (is_ad) // XXX yurij: we are not supporting adaptive ads
         return false;
     return !E.disabled && src.type=='hls' && window.Hls &&
         window.Hls.isSupported();

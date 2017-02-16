@@ -459,7 +459,7 @@ E.supports = function(src){
 
 E.attach = function(cb){
     provider_disabled = false;
-    if (!provider_attached) 
+    if (!provider_attached)
     {
         provider_attached = true;
         callback = cb;

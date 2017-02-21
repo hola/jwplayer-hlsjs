@@ -463,7 +463,9 @@ function get_player_instances(){
 }
 E.supports = function(src){
     var is_ad = get_player_instances().every(function(j){
-        return j.getPlaylist().every(function(p){
+        // XXX yurij: jw.getPlaylist returns playlist item on early call
+        var pl = j.getPlaylist();
+        return (pl.every ? pl : [{sources: [pl]}]).every(function(p){
             return (p.allSources||p.sources).every(function(s){
                 return s.file!=src.file; });
         });

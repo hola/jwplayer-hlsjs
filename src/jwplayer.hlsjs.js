@@ -456,8 +456,9 @@ E.getName = function(){ return {name: 'dm/hls'}; };
 // XXX yurij: copied from zjwplayer3.js to not depend on our code
 function get_player_instances(){
     var i = 0, res = [], jw;
-    // XXX marka: if no player instanced yet, jw returns {registerPlugin: ...}
-    while ((jw = window.jwplayer(i++)) && Object.keys(jw).length>1)
+    // XXX marka/vadiml: a real instance will contain play(), otherwise it
+    // will be {registerPlugin: ...} with anything the customer adds
+    while ((jw = window.jwplayer(i++)) && jw.play)
         res.push(jw);
     return res;
 }

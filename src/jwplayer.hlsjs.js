@@ -1,16 +1,16 @@
 'use strict';
 var EventEmitter = require('eventemitter3');
 var E = module.exports = HlsProv;
-var callback, provider_attached = false, provider_disabled = false;
+var provider_attached = false, provider_disabled = false;
 
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
 function HlsProv(id){
     var jwe = window.jwplayer.events;
+    var jw = id && window.jwplayer(id);
+    jw.provider = this;
     function empty_fn(name){ return function(){}; }
     var _this = this;
-    if (callback)
-        callback(this);
     this.hls_restore_pos = function(){
         var new_pos = this.hls_queued.seek;
         var old_pos = video.currentTime;
@@ -87,7 +87,7 @@ function HlsProv(id){
     this.attached = true;
     this.hls_state = 'idle';
     var element = document.getElementById(id), container;
-    var video = element ? element.querySelector('video') : undefined, hls, jw;
+    var video = element ? element.querySelector('video') : undefined, hls;
     video = video || document.createElement('video');
     video.className = 'jw-video jw-reset';
     // XXX marka: mark html5 element to skip autodetection of dm/hls
@@ -111,7 +111,7 @@ function HlsProv(id){
     }
     var hls_params = {}, hola_log;
     this.ad_count = 0;
-    if (id && (jw = window.jwplayer(id)))
+    if (jw)
     {
         // XXX pavelki: counters for ad, need to make load deferred
         jw.on('adImpression', function(){
@@ -467,8 +467,9 @@ E.supports = function(src){
         // XXX yurij: jw.getPlaylist returns playlist item on early call
         var pl = j.getPlaylist();
         return (pl.every ? pl : [{sources: [pl]}]).every(function(p){
-            return (p.allSources||p.sources||[]).every(function(s){
-                return s.file!=src.file; });
+            // XXX pavlo: playlist item can be w/o sources/allSources
+            return (p.allSources||p.sources||[{file: p.file}])
+                .every(function(s){ return s.file!=src.file; });
         });
     });
     if (is_ad) // XXX yurij: we are not supporting adaptive ads
@@ -477,12 +478,11 @@ E.supports = function(src){
         window.Hls.isSupported();
 };
 
-E.attach = function(cb){
+E.attach = function(){
     provider_disabled = false;
     if (!provider_attached)
     {
         provider_attached = true;
-        callback = cb;
         // XXX arik: unregister on error/fallback
         window.jwplayer.api.registerProvider(this);
     }

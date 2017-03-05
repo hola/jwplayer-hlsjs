@@ -6,8 +6,10 @@ var provider_attached = false, provider_disabled = false;
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
 function HlsProv(id){
-    var jwe = window.jwplayer.events;
-    var jw = id && window.jwplayer(id);
+    var jwplayer = E.jwplayer||window.jwplayer;
+    var Hls = E.Hls||window.Hls;
+    var jwe = jwplayer.events;
+    var jw = id && jwplayer(id);
     jw.provider = this;
     function empty_fn(name){ return function(){}; }
     var _this = this;
@@ -46,14 +48,14 @@ function HlsProv(id){
         if (_this.hls_state=='ready')
             _this.hls_state = 'idle';
         _this.level_cb = function(){
-            hls.off(window.Hls.Events.LEVEL_LOADED, _this.level_cb);
+            hls.off(Hls.Events.LEVEL_LOADED, _this.level_cb);
             _this.level_cb = undefined;
             _this.hls_state = 'ready';
             if (_this.hls_queued.play)
                 hls_play();
             _this.trigger(jwe.JWPLAYER_MEDIA_BUFFER_FULL);
         };
-        hls.on(window.Hls.Events.LEVEL_LOADED, _this.level_cb);
+        hls.on(Hls.Events.LEVEL_LOADED, _this.level_cb);
         hls.loadSource(src);
         if (!hls.media)
             _this.attachMedia();
@@ -129,7 +131,7 @@ function HlsProv(id){
     hls_params.debug = {};
     ['debug', 'info', 'log', 'warn','error'].forEach(function(method){
         hls_params.debug[method] = _log.bind(null, method); });
-    this.hls = hls = new window.Hls(hls_params);
+    this.hls = hls = new Hls(hls_params);
     hls.hola_log = hola_log;
     if (jw)
         jw.hls = hls;
@@ -290,14 +292,14 @@ function HlsProv(id){
         });
         return levels;
     }
-    hls.on(window.Hls.Events.ERROR, function(event, data){
+    hls.on(Hls.Events.ERROR, function(event, data){
         if (!data.fatal)
             return;
         var msg;
         switch (data.details)
         {
-        case window.Hls.ErrorDetails.MANIFEST_LOAD_ERROR:
-        case window.Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT:
+        case Hls.ErrorDetails.MANIFEST_LOAD_ERROR:
+        case Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT:
             msg = 'Cannot load M3U8: '+data.response.statusText;
             break;
         default:
@@ -306,13 +308,13 @@ function HlsProv(id){
         }
         _this.trigger(jwe.JWPLAYER_MEDIA_ERROR, {message: msg});
     });
-    hls.on(window.Hls.Events.MANIFEST_LOADED, function(){
+    hls.on(Hls.Events.MANIFEST_LOADED, function(){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVELS, {
             currentQuality: hls.autoLevelEnabled ? 0 : hls.currentLevel+1,
             levels: get_levels()
         });
     });
-    hls.on(window.Hls.Events.LEVEL_SWITCH, function(e, data){
+    hls.on(Hls.Events.LEVEL_SWITCH, function(e, data){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED, {
             // level 0 is dummy for 'Auto' option in jwplayer's UI
             currentQuality: hls.manual_level==-1 ? 0 : data.level+1,
@@ -423,11 +425,11 @@ function HlsProv(id){
             this.setState('ready');
     };
     this.detachMedia = function(){
-        hls.trigger(window.Hls.Events.BUFFER_RESET);
+        hls.trigger(Hls.Events.BUFFER_RESET);
         hls.detachMedia();
         if (this.level_cb)
         {
-            hls.off(window.Hls.Events.LEVEL_LOADED, this.level_cb);
+            hls.off(Hls.Events.LEVEL_LOADED, this.level_cb);
             this.level_cb = undefined;
         }
         // XXX pavelki: hack to remove pending segments
@@ -455,14 +457,16 @@ E.getName = function(){ return {name: 'dm/hls'}; };
 
 // XXX yurij: copied from zjwplayer3.js to not depend on our code
 function get_player_instances(){
+    var jwplayer = E.jwplayer||window.jwplayer;
     var i = 0, res = [], jw;
     // XXX marka/vadiml: a real instance will contain pause(), otherwise it
     // will be {registerPlugin: ...} with anything the customer adds
-    while ((jw = window.jwplayer(i++)) && jw.pause)
+    while ((jw = jwplayer(i++)) && jw.pause)
         res.push(jw);
     return res;
 }
 E.supports = function(src){
+    var Hls = E.Hls||window.Hls;
     var is_ad = get_player_instances().every(function(j){
         // XXX yurij: jw.getPlaylist returns playlist item on early call
         var pl = j.getPlaylist();
@@ -474,17 +478,17 @@ E.supports = function(src){
     });
     if (is_ad) // XXX yurij: we are not supporting adaptive ads
         return false;
-    return !E.disabled && src.type=='hls' && window.Hls &&
-        window.Hls.isSupported();
+    return !E.disabled && src.type=='hls' && Hls && Hls.isSupported();
 };
 
 E.attach = function(){
+    var jwplayer = E.jwplayer||window.jwplayer;
     provider_disabled = false;
     if (!provider_attached)
     {
         provider_attached = true;
         // XXX arik: unregister on error/fallback
-        window.jwplayer.api.registerProvider(this);
+        jwplayer.api.registerProvider(this);
     }
 };
 

@@ -499,5 +499,3 @@ E.detach = function(){
 };
 
 E.VERSION = '__VERSION__';
-
-return E;

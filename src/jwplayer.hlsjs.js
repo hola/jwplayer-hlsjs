@@ -6,10 +6,9 @@ var provider_attached = false, provider_disabled = false;
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
 function HlsProv(id){
-    var jwplayer = E.jwplayer||window.jwplayer;
-    var Hls = E.Hls||window.Hls;
-    var jwe = jwplayer.events;
-    var jw = id && jwplayer(id);
+    var jwplayer = E.jwplayer||window.jwplayer, Hls = E.Hls||window.Hls;
+    var jwe = jwplayer.events, jw = id && jwplayer(id);
+    var ua = navigator.userAgent;
     jw.provider = this;
     function empty_fn(name){ return function(){}; }
     var _this = this;
@@ -88,6 +87,9 @@ function HlsProv(id){
     this.hls_queued = {play: false, seek: 0};
     this.attached = true;
     this.hls_state = 'idle';
+    // XXX pavelki: Chrome/Safari/iOS/MS Edge
+    this.renderNatively = /(iPhone|iPad|iPod|iPod touch);.*?OS/.test(ua)
+        || / (Chrome|Version)\/\d+(\.\d+)+.* Safari\/\d+(\.\d+)+/.test(ua);
     var element = document.getElementById(id), container;
     var video = element ? element.querySelector('video') : undefined, hls;
     video = video || document.createElement('video');
@@ -115,7 +117,9 @@ function HlsProv(id){
     this.ad_count = 0;
     if (jw)
     {
-        // XXX pavelki: counters for ad, need to make load deferred
+        jw.on('captionsList', caption_track);
+        jw.on('captionsChanged', caption_track);
+        // XXX pavelki: counters for ad, need to make loading deferred
         jw.on('adImpression', function(){
             _this.ad_count++;
         });
@@ -136,6 +140,13 @@ function HlsProv(id){
     if (jw)
         jw.hls = hls;
     var _buffered, _duration, _position;
+    function caption_track(cc){
+        var tracks = video.textTracks, new_id = cc.tracks[cc.track].id;
+        if (!_this.renderNatively)
+            return;
+        for (var i=0; i<tracks.length; i++)
+            tracks[i].mode = tracks[i]._id==new_id ? 'showing' : 'hidden';
+    }
     function get_seekable_end(){
         var i, end, len = video.seekable ? video.seekable.length : 0;
         for (end = 0, i = 0; i<len; i++)
@@ -197,7 +208,11 @@ function HlsProv(id){
                 message: 'Error loading media: File could not be played'});
         },
         loadstart: function(){ video.setAttribute('jw-loaded', 'started'); },
-        loadeddata: function(){ video.setAttribute('jw-loaded', 'data'); },
+        loadeddata: function(){
+            if (video.textTracks.length && _this.renderNatively)
+                _this.trigger('subtitlesTracks', {tracks: video.textTracks});
+            video.setAttribute('jw-loaded', 'data');
+        },
         loadedmetadata: function(){
             if (video.muted)
             {

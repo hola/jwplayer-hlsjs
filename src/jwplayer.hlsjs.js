@@ -89,7 +89,8 @@ function HlsProv(id){
     this.hls_state = 'idle';
     // XXX pavelki: Chrome/Safari/iOS/MS Edge
     this.renderNatively = /(iPhone|iPad|iPod|iPod touch);.*?OS/.test(ua)
-        || / (Chrome|Version)\/\d+(\.\d+)+.* Safari\/\d+(\.\d+)+/.test(ua);
+        || / (Chrome|Version)\/\d+(\.\d+)+.* Safari\/\d+(\.\d+)+/.test(ua)
+        || /Firefox\/(\d+(?:\.\d+)+)/.test(ua);
     var element = document.getElementById(id), container;
     var video = element ? element.querySelector('video') : undefined, hls;
     video = video || document.createElement('video');
@@ -209,8 +210,14 @@ function HlsProv(id){
         },
         loadstart: function(){ video.setAttribute('jw-loaded', 'started'); },
         loadeddata: function(){
-            if (video.textTracks.length && _this.renderNatively)
+            var addtrack = function(){
                 _this.trigger('subtitlesTracks', {tracks: video.textTracks});
+            };
+            if (video.textTracks.length && _this.renderNatively)
+            {
+                video.textTracks.onaddtrack = addtrack;
+                addtrack();
+            }
             video.setAttribute('jw-loaded', 'data');
         },
         loadedmetadata: function(){

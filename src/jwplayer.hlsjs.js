@@ -502,7 +502,7 @@ var provider_force_disabled = (function filter_out(){
             script.getAttribute(reg_attr)+' found');
         return false;
     }
-    return Math.random()*100>conf;
+    return !conf||Math.random()*100>conf;
 })();
 
 E.supports = function(src){

@@ -497,7 +497,7 @@ var provider_force_disabled = (function filter_out(){
     var conf = +script.getAttribute(reg_attr);
     if (isNaN(conf)||conf<0||conf>100)
     {
-        console.error('JW HLS provider: invalid '+reg_attr+' attribute, '
+        console.error('Hola JW HLS provider: invalid '+reg_attr+' attribute, '
             +'expected a value between 0 and 100 but '+
             script.getAttribute(reg_attr)+' found');
         return false;

@@ -491,7 +491,7 @@ function get_player_instances(){
 var provider_force_disabled = (function filter_out(){
     var reg_attr = 'register-percent';
     var script = document.currentScript||
-        document.querySelector('#hola_jw_hls_provider');
+        document.querySelector('#hola_jwplayer_hls_provider');
     if (!script||!script.hasAttribute(reg_attr))
         return false;
     var conf = +script.getAttribute(reg_attr);

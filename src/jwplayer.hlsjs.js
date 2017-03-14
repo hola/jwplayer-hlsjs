@@ -210,14 +210,11 @@ function HlsProv(id){
         },
         loadstart: function(){ video.setAttribute('jw-loaded', 'started'); },
         loadeddata: function(){
-            var addtrack = function(){
+            video.textTracks.onaddtrack = function(){
                 _this.trigger('subtitlesTracks', {tracks: video.textTracks});
             };
             if (video.textTracks.length && _this.renderNatively)
-            {
-                video.textTracks.onaddtrack = addtrack;
-                addtrack();
-            }
+                video.textTracks.onaddtrack();
             video.setAttribute('jw-loaded', 'data');
         },
         loadedmetadata: function(){

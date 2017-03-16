@@ -8,7 +8,6 @@ var provider_attached = false, provider_disabled = false;
 function HlsProv(id){
     var jwplayer = E.jwplayer||window.jwplayer, Hls = E.Hls||window.Hls;
     var jwe = jwplayer.events, jw = id && jwplayer(id);
-    var ua = navigator.userAgent;
     jw.provider = this;
     function empty_fn(name){ return function(){}; }
     var _this = this;
@@ -87,10 +86,13 @@ function HlsProv(id){
     this.hls_queued = {play: false, seek: 0};
     this.attached = true;
     this.hls_state = 'idle';
-    // XXX pavelki: Chrome/Safari/iOS/MS Edge
-    this.renderNatively = /(iPhone|iPad|iPod|iPod touch);.*?OS/.test(ua)
-        || / (Chrome|Version)\/\d+(\.\d+)+.* Safari\/\d+(\.\d+)+/.test(ua)
-        || /Firefox\/(\d+(?:\.\d+)+)/.test(ua);
+    this.supports_captions = function(){
+        var ua = navigator.userAgent;
+        return /(iPhone|iPad|iPod|iPod touch);.*?OS/.test(ua)
+            || / (Chrome|Version)\/\d+(\.\d+)+.* Safari\/\d+(\.\d+)+/.test(ua)
+            || /Firefox\/(\d+(?:\.\d+)+)/.test(ua);
+    };
+    this.renderNatively = this.supports_captions();
     var element = document.getElementById(id), container;
     var video = element ? element.querySelector('video') : undefined, hls;
     video = video || document.createElement('video');
@@ -213,7 +215,7 @@ function HlsProv(id){
             video.textTracks.onaddtrack = function(){
                 _this.trigger('subtitlesTracks', {tracks: video.textTracks});
             };
-            if (video.textTracks.length && _this.renderNatively)
+            if (video.textTracks.length)
                 video.textTracks.onaddtrack();
             video.setAttribute('jw-loaded', 'data');
         },

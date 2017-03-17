@@ -2,6 +2,23 @@
 var EventEmitter = require('eventemitter3');
 var E = module.exports = HlsProv;
 var provider_attached = false, provider_disabled = false;
+var script_conf = (function script_conf_init(){
+    var attrs = {register: 'register-percent', manual_init: 'manual-init'};
+    var script = document.currentScript||
+        document.querySelector('#hola_jwplayer_hls_provider');
+    if (!script||!script.hasAttribute(attrs.register))
+        return {};
+    var rpercent = +script.getAttribute(attrs.register);
+    if (isNaN(rpercent)||rpercent<0||rpercent>100)
+    {
+        console.error('Hola JW HLS provider: invalid '+attrs.register
+            +' attribute, expected a value between 0 and 100 but '+
+            script.getAttribute(attrs.register)+' found');
+        return {disabled: true};
+    }
+    return {autoinit: !script.hasAttribute(attrs.manual_init),
+        disabled: !rpercent||Math.random()*100>rpercent};
+})();
 
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
@@ -487,26 +504,7 @@ function get_player_instances(){
     return res;
 }
 
-var provider_force_disabled = (function filter_out(){
-    var reg_attr = 'register-percent';
-    var script = document.currentScript||
-        document.querySelector('#hola_jwplayer_hls_provider');
-    if (!script||!script.hasAttribute(reg_attr))
-        return false;
-    var conf = +script.getAttribute(reg_attr);
-    if (isNaN(conf)||conf<0||conf>100)
-    {
-        console.error('Hola JW HLS provider: invalid '+reg_attr+' attribute, '
-            +'expected a value between 0 and 100 but '+
-            script.getAttribute(reg_attr)+' found');
-        return false;
-    }
-    return !conf||Math.random()*100>conf;
-})();
-
 E.supports = function(src){
-    if (provider_force_disabled)
-        return false;
     var Hls = E.Hls||window.Hls;
     var is_ad = get_player_instances().every(function(j){
         // XXX yurij: jw.getPlaylist returns playlist item on early call
@@ -523,8 +521,6 @@ E.supports = function(src){
 };
 
 E.attach = function(){
-    if (provider_force_disabled)
-        return;
     var jwplayer = E.jwplayer||window.jwplayer;
     provider_disabled = false;
     if (!provider_attached)
@@ -536,11 +532,14 @@ E.attach = function(){
 };
 
 E.detach = function(){
-    if (provider_force_disabled)
-        return;
     // we don't remove provider from list, just set it as disabled so it will
     // return false in supports()
     provider_disabled = true;
 };
 
 E.VERSION = '__VERSION__';
+
+if (script_conf.disabled)
+    E.attach = E.detach = E.supports = function(){};
+else if (script_conf.autoinit)
+    E.attach();

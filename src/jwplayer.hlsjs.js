@@ -473,7 +473,6 @@ function HlsProv(id){
         // XXX pavelki: hack to remove pending segments
         delete hls.bufferController.segments;
         this.attached = false;
-        this.setState('paused');
         return video;
     };
     this.setState = function(state){

@@ -456,9 +456,6 @@ function HlsProv(id){
             hls_params.debug.log('jwprovider attach inside ad '+this.ad_count);
         this.attached = true;
         hls.attachMedia(video);
-        var video_state = video.getAttribute('jw-loaded');
-        if (video_state && !['init', 'started'].includes(video_state))
-            this.setState('ready');
     };
     this.detachMedia = function(){
         hls.trigger(Hls.Events.BUFFER_RESET);

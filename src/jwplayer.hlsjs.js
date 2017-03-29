@@ -207,6 +207,11 @@ function HlsProv(id){
         _this.trigger(jwe.JWPLAYER_MEDIA_BUFFER, {bufferPercent: buffered*100,
             position: pos, duration: get_duration_inf()});
     }
+    function playback_complete(){
+        _this.setState('complete');
+        _this.before_complete = false;
+        _this.trigger(jwe.JWPLAYER_MEDIA_COMPLETE);
+    }
     var video_listeners = {
         durationchange: function(){
             _duration = get_duration();
@@ -215,13 +220,10 @@ function HlsProv(id){
         ended: function(){
             if (_this.state=='idle' || _this.state=='complete')
                 return;
-            _this.completed = true;
+            _this.before_complete = true;
             _this.trigger(jwe.JWPLAYER_MEDIA_BEFORECOMPLETE);
-            if (!_this.attached)
-                _this.post_roll = true;
-            _this.setState('complete');
-            _this.completed = false;
-            _this.trigger(jwe.JWPLAYER_MEDIA_COMPLETE);
+            if (_this.attached)
+                playback_complete();
         },
         error: function(){
             _this.trigger(jwe.JWPLAYER_MEDIA_ERROR, {
@@ -445,18 +447,14 @@ function HlsProv(id){
     this.getAudioTracks = empty_fn('getAudioTracks');
     this.getCurrentAudioTrack = empty_fn('getCurrentAudioTrack');
     this.setCurrentAudioTrack = empty_fn('setCurrentAudioTrack');
-    this.checkComplete = function(){ return !!this.completed; };
+    this.checkComplete = function(){ return !!this.before_complete; };
     this.setControls = empty_fn('setControls');
     this.attachMedia = function(){
+        if (this.before_complete)
+            return playback_complete();
         if (this.ad_count && hls_params.debug)
             hls_params.debug.log('jwprovider attach inside ad '+this.ad_count);
         this.attached = true;
-        // prevent hls attach after a postroll and playback completes
-        if (this.post_roll)
-        {
-            this.hls_state = 'idle';
-            return this.post_roll = undefined;
-        }
         hls.attachMedia(video);
         var video_state = video.getAttribute('jw-loaded');
         if (video_state && !['init', 'started'].includes(video_state))

@@ -468,6 +468,8 @@ function HlsProv(id){
         // XXX pavelki: hack to remove pending segments
         delete hls.bufferController.segments;
         this.attached = false;
+        // XXX yurij: remove when detachMedia->bufferring issue fixed
+        this.setState('paused');
         return video;
     };
     this.setState = function(state){

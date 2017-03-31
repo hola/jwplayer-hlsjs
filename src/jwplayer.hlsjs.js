@@ -1,6 +1,8 @@
 'use strict';
 var EventEmitter = require('eventemitter3');
 var E = module.exports = HlsProv;
+var ls = window.localStorage;
+var provider_name = 'Hola JW HLS provider';
 var provider_attached = false, provider_disabled = false;
 var script_conf = (function script_conf_init(){
     var attrs = {register: 'register-percent', manual_init: 'manual-init'};
@@ -11,10 +13,16 @@ var script_conf = (function script_conf_init(){
     var rpercent = +script.getAttribute(attrs.register);
     if (isNaN(rpercent)||rpercent<0||rpercent>100)
     {
-        console.error('Hola JW HLS provider: invalid '+attrs.register
-            +' attribute, expected a value between 0 and 100 but '+
+        console.error(provider_name+': invalid '+attrs.register+
+            ' attribute, expected a value between 0 and 100 but '+
             script.getAttribute(attrs.register)+' found');
         return {disabled: true};
+    }
+    if (ls && ls.getItem('hola_provider_register_percent'))
+    {
+        rpercent = +ls.getItem('hola_provider_register_percent');
+        console.info(provider_name+': '+attrs.register+' forced to '+rpercent+
+            '% by localStorage configuration');
     }
     return {autoinit: !script.hasAttribute(attrs.manual_init),
         disabled: !rpercent||Math.random()*100>rpercent};

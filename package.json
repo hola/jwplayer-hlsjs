@@ -1,7 +1,7 @@
 {
   "name": "@hola.org/jwplayer-hlsjs",
   "description": "hls.js provider for jwplayer",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "license": "ISC",
   "homepage": "https://github.com/hola/jwplayer-hlsjs",
   "scripts": {
@@ -25,7 +25,9 @@
     ".jshintrc"
   ],
   "browserify": {
-    "transform": ["browserify-versionify"]
+    "transform": [
+      "browserify-versionify"
+    ]
   },
   "dependencies": {
     "eventemitter3": "^2.0.2"

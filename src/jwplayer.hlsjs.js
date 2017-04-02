@@ -8,9 +8,15 @@ var script_conf = (function script_conf_init(){
     var attrs = {register: 'register-percent', manual_init: 'manual-init'};
     var script = document.currentScript||
         document.querySelector('#hola_jwplayer_hls_provider');
-    if (!script||!script.hasAttribute(attrs.register))
+    if (!script)
         return {};
-    var rpercent = +script.getAttribute(attrs.register);
+    var rpercent = '{[=it.HOLA_REGISTER_PERCENT]}';
+    if (rpercent.startsWith('{['))
+    {
+        if (!script.hasAttribute(attrs.register))
+            return {};
+        rpercent = +script.getAttribute(attrs.register);
+    }
     if (isNaN(rpercent)||rpercent<0||rpercent>100)
     {
         console.error(provider_name+': invalid '+attrs.register+

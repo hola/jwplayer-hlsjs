@@ -567,19 +567,6 @@ E.reload_jwplayer_instances = function(){
             }
         }
         jw.setup(c);
-        // hack for jwplayer < 7.3.0
-        if (/^\d*\.?\d+%$/.test(c.aspectratio))
-        {
-            jw.onReady(function(){
-                var width = jw.getWidth();
-                var container = jw.getContainer();
-                jw.resize(width, width*c.aspectratio.slice(0, -1)/100|0);
-                container.className += ' jw-flag-aspect-mode';
-                var aspect = container.querySelector('.jw-aspect');
-                if (aspect)
-                    aspect.style.paddingTop = c.aspectratio;
-            });
-        }
     });
 };
 

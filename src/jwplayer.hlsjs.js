@@ -547,6 +547,42 @@ E.detach = function(){
     provider_disabled = true;
 };
 
+// XXX vadiml copied from loader.js&zjwplayer3.js to not depend on our code.
+// For use by HolaCDN Onboarding Tool extension
+E.reload_jwplayer_instances = function(){
+    get_player_instances().forEach(function(jw){
+        var c = jw.getConfig();
+        if (!c)
+            return;
+        // XXX marka: JW removes conf.advertising.client, try to restore it
+        if (c.advertising && !c.advertising.client && c.plugins)
+        {
+            for (var url in c.plugins)
+            {
+                if (c.plugins[url]!==c.advertising)
+                    continue;
+                var m = url.match(/\/(\w+)\.js$/);
+                c.advertising.client = m && m[1];
+                break;
+            }
+        }
+        jw.setup(c);
+        // hack for jwplayer < 7.3.0
+        if (/^\d*\.?\d+%$/.test(c.aspectratio))
+        {
+            jw.onReady(function(){
+                var width = jw.getWidth();
+                var container = jw.getContainer();
+                jw.resize(width, width*c.aspectratio.slice(0, -1)/100|0);
+                container.className += ' jw-flag-aspect-mode';
+                var aspect = container.querySelector('.jw-aspect');
+                if (aspect)
+                    aspect.style.paddingTop = c.aspectratio;
+            });
+        }
+    });
+};
+
 E.VERSION = '__VERSION__';
 
 if (script_conf.disabled)

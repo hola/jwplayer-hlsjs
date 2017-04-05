@@ -514,7 +514,23 @@ function get_player_instances(){
     return res;
 }
 
+var check_opera = /\bOPR\b\/(\d+)/i;
+var check_chrome = / Chrome\/(\d+)(\.\d+)+.* Safari\/\d+(\.\d+)+/;
+
+function use_opera_mini(){
+    var res, opera, ua = window.navigator&&navigator.userAgent;
+    if (res = check_chrome.exec(ua))
+    {
+        opera = check_opera.exec(ua);
+        return ua.match(/Android/) && (opera ? opera[1] : undefined)<25;
+    }
+    return false;
+}
+
 E.supports = function(src){
+    // XXX sergeir: we can't download m3u8 level for opera mini on android
+    if (use_opera_mini())
+        return false;
     var Hls = E.Hls||window.Hls;
     var is_ad = get_player_instances().every(function(j){
         // XXX yurij: jw.getPlaylist returns playlist item on early call

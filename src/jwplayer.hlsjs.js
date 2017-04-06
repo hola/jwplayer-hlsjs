@@ -123,7 +123,6 @@ function HlsProv(id){
             || / (Chrome|Version)\/\d+(\.\d+)+.* Safari\/\d+(\.\d+)+/.test(ua)
             || /Firefox\/(\d+(?:\.\d+)+)/.test(ua);
     };
-    this.renderNatively = this.supports_captions();
     var element = document.getElementById(id), container;
     var video = element ? element.querySelector('video') : undefined, hls;
     video = video || document.createElement('video');
@@ -175,9 +174,9 @@ function HlsProv(id){
         jw.hls = hls;
     var _buffered, _duration, _position;
     function caption_track(cc){
-        var tracks = video.textTracks, new_id = cc.tracks[cc.track].id;
         if (!_this.renderNatively)
             return;
+        var tracks = video.textTracks, new_id = cc.tracks[cc.track].id;
         for (var i=0; i<tracks.length; i++)
             tracks[i].mode = tracks[i]._id==new_id ? 'showing' : 'hidden';
     }
@@ -245,12 +244,16 @@ function HlsProv(id){
         },
         loadstart: function(){ video.setAttribute('jw-loaded', 'started'); },
         loadeddata: function(){
+            video.setAttribute('jw-loaded', 'data');
+            if (!_this.supports_captions())
+                return;
             video.textTracks.onaddtrack = function(){
+                _this.renderNatively = true;
                 _this.trigger('subtitlesTracks', {tracks: video.textTracks});
             };
+            // XXX pavelki: add checking of playlist
             if (video.textTracks.length)
                 video.textTracks.onaddtrack();
-            video.setAttribute('jw-loaded', 'data');
         },
         loadedmetadata: function(){
             if (video.muted)

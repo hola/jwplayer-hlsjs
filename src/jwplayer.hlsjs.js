@@ -200,10 +200,12 @@ function HlsProv(id){
         return is_live() ? 1/0 : get_duration();
     }
     function is_live(){
-        var live, sc;
+        var live, levels;
         try {
-            sc = hls.streamController;
-            live = sc.levels[sc.currentLevel].details.live;
+            if (!(levels = hls.streamController.levels))
+                return;
+            var loaded_lvl = levels.find(function(lvl){ return lvl.details; });
+            live = loaded_lvl && !!loaded_lvl.details.live;
         } catch(e){}
         return live;
     }

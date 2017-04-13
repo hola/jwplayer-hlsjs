@@ -76,6 +76,8 @@ function HlsProv(id){
             return;
         if (_this.hls_state=='ready')
             _this.hls_state = 'idle';
+        if (_this.level_cb)
+            hls.off(Hls.Events.LEVEL_LOADED, _this.level_cb);
         _this.level_cb = function(){
             hls.off(Hls.Events.LEVEL_LOADED, _this.level_cb);
             _this.level_cb = undefined;
@@ -392,8 +394,10 @@ function HlsProv(id){
         if (this.hls_state!='ready' || (this.source||'') != newsource ||
             ['init', 'started'].includes(video_state))
         {
+            var sc;
             video.load();
-            hls.stopLoad();
+            hls.stopLoad(hls.media && this.hls_state=='ready' &&
+                video_state=='init');
             hls_load(this.source = newsource);
             video.setAttribute('jw-loaded', 'init');
         }

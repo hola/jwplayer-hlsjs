@@ -208,7 +208,10 @@ function HlsProv(id){
                 return;
             var loaded_lvl = levels.find(function(lvl){ return lvl.details; });
             live = loaded_lvl && !!loaded_lvl.details.live;
-        } catch(e){}
+        } catch(e){
+            if (hls_params.debug)
+                hls_params.debug.log('is_live failed with '+e);
+        }
         return live;
     }
     function get_buffered(){

@@ -1,7 +1,8 @@
 'use strict';
 var EventEmitter = require('eventemitter3');
 var E = module.exports = HlsProv;
-var ls = window.localStorage;
+var ls;
+try { ls = window.localStorage; } catch(e){}
 var provider_name = 'Hola JW HLS provider';
 var provider_attached = false, provider_disabled = false;
 var script_conf = (function script_conf_init(){

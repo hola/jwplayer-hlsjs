@@ -527,6 +527,12 @@ function get_player_instances(){
     return res;
 }
 
+function src_supported(src){
+    if (src.type=='hls')
+        return true;
+    return (src.file||'').match(/\.m3u8$/);
+}
+
 E.supports = function(src){
     var Hls = E.Hls||window.Hls;
     var is_ad = get_player_instances().every(function(j){
@@ -540,7 +546,7 @@ E.supports = function(src){
     });
     if (is_ad) // XXX yurij: we are not supporting adaptive ads
         return false;
-    return !E.disabled && src.type=='hls' && Hls && Hls.isSupported();
+    return !E.disabled && src_supported(src) && Hls && Hls.isSupported();
 };
 
 E.attach = function(){

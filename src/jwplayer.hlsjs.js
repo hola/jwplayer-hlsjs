@@ -69,7 +69,25 @@ function HlsProv(id){
         if (!(_this.hls_queued.play = _this.hls_state!='ready'))
         {
             _this.hls_restore_pos();
-            video.play();
+            var promise = video.play();
+            if (promise && promise.catch)
+            {
+                promise.catch(function(err){
+                    console.warn(err);
+                    // user gesture required to start playback
+                    if (err.name=='NotAllowedError' &&
+                        video.hasAttribute('jw-gesture-required'))
+                    {
+                        _this.trigger('autoplayFailed');
+                    }
+                });
+            }
+            else if (video.hasAttribute('jw-gesture-required'))
+            {
+                // autoplay isn't supported in older versions of Safari (<10)
+                // and Chrome (<53)
+                _this.trigger('autoplayFailed');
+            }
         }
     }
     function hls_load(src){

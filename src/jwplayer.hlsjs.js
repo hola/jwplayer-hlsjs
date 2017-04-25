@@ -138,6 +138,10 @@ function HlsProv(id){
     this.hls_queued = {play: false, seek: 0};
     this.attached = true;
     this.hls_state = 'idle';
+    this.is_mobile = function(){
+        var ua = navigator.userAgent;
+        return /iP(hone|ad|od)/i.test(ua) || /Android/i.test(ua);
+    };
     this.supports_captions = function(){
         var ua = navigator.userAgent;
         return /(iPhone|iPad|iPod|iPod touch);.*?OS/.test(ua)
@@ -146,7 +150,12 @@ function HlsProv(id){
     };
     var element = document.getElementById(id), container;
     var video = element ? element.querySelector('video') : undefined, hls;
-    video = video || document.createElement('video');
+    if (!video)
+    {
+        video = document.createElement('video');
+        if (this.is_mobile())
+            video.setAttribute('jw-gesture-required', '');
+    }
     video.className = 'jw-video jw-reset';
     // XXX marka: mark html5 element to skip autodetection of dm/hls
     video.hola_dm_hls_attached = true;

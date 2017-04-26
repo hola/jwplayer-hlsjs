@@ -81,6 +81,7 @@ function HlsProv(id){
                         video.hasAttribute('jw-gesture-required'))
                     {
                         _this.trigger('autoplayFailed');
+                        video.setAttribute('autoplay-failed', 'failed');
                     }
                 });
             }
@@ -89,6 +90,7 @@ function HlsProv(id){
                 // autoplay isn't supported in older versions of Safari (<10)
                 // and Chrome (<53)
                 _this.trigger('autoplayFailed');
+                video.setAttribute('autoplay-failed', 'failed');
             }
         }
     }
@@ -311,7 +313,10 @@ function HlsProv(id){
             if (!video.hasAttribute('jw-played'))
                 video.setAttribute('jw-played', '');
             if (video.hasAttribute('jw-gesture-required'))
+            {
                 video.removeAttribute('jw-gesture-required');
+                video.removeAttribute('autoplay-failed');
+            }
             _this.trigger(jwe.JWPLAYER_PROVIDER_FIRST_FRAME, {});
         },
         pause: function(){

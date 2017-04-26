@@ -31,7 +31,9 @@ var script_conf = (function script_conf_init(){
         console.info(provider_name+': '+attrs.register+' forced to '+rpercent+
             '% by localStorage configuration');
     }
-    return {autoinit: !script.hasAttribute(attrs.manual_init),
+    var embedded = '{[=it.HOLA_EMBEDDED_PROVIDER]}'==1;
+    var autoinit = !embedded && !script.hasAttribute(attrs.manual_init);
+    return {autoinit: autoinit,
         disabled: !rpercent||Math.random()*100>rpercent};
 })();
 

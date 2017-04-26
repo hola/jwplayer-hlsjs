@@ -150,10 +150,11 @@ function HlsProv(id){
     };
     var element = document.getElementById(id), container;
     var video = element ? element.querySelector('video') : undefined, hls;
+    var _is_mobile = this.is_mobile();
     if (!video)
     {
         video = document.createElement('video');
-        if (this.is_mobile())
+        if (_is_mobile)
             video.setAttribute('jw-gesture-required', '');
     }
     video.className = 'jw-video jw-reset';
@@ -307,6 +308,8 @@ function HlsProv(id){
             _this.setState('playing');
             if (!video.hasAttribute('jw-played'))
                 video.setAttribute('jw-played', '');
+            if (video.hasAttribute('jw-gesture-required'))
+                video.removeAttribute('jw-gesture-required');
             _this.trigger(jwe.JWPLAYER_PROVIDER_FIRST_FRAME, {});
         },
         pause: function(){
@@ -419,8 +422,12 @@ function HlsProv(id){
             return;
         var newsource = get_default_src(item.sources).file;
         var video_state = video.getAttribute('jw-loaded');
-        var hq = this.hls_queued;
-        this.setState('loading');
+        var hq = this.hls_queued, played = video.hasAttribute('jw-played');
+        if (!_is_mobile || played)
+        {
+            // don't change state on mobile before user initiates playback
+            this.setState('loading');
+        }
         hq.seek = Math.max(item.starttime-(hq.rw_sec||0), 0);
         if (this.hls_state!='ready' || (this.source||'') != newsource ||
             ['init', 'started'].includes(video_state))

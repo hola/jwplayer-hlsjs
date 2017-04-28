@@ -25,13 +25,16 @@ var script_conf = (function script_conf_init(){
             script.getAttribute(attrs.register)+' found');
         return {disabled: true};
     }
+    var embedded = '{[=it.HOLA_EMBEDDED_PROVIDER]}'==1;
+    // loader.js takes percent control on its side
+    if (embedded)
+        rpercent = 100;
     if (ls && ls.getItem('hola_provider_register_percent'))
     {
         rpercent = +ls.getItem('hola_provider_register_percent');
         console.info(provider_name+': '+attrs.register+' forced to '+rpercent+
             '% by localStorage configuration');
     }
-    var embedded = '{[=it.HOLA_EMBEDDED_PROVIDER]}'==1;
     var autoinit = !embedded && !script.hasAttribute(attrs.manual_init);
     return {autoinit: autoinit,
         disabled: !rpercent||Math.random()*100>rpercent};

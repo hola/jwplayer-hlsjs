@@ -117,6 +117,36 @@ function HlsProv(id){
         if (!hls.media)
             _this.attachMedia();
     }
+    function on_video_src_change(video, allow_cb){
+        var o = video;
+        while (o && !(o = Object.getPrototypeOf(o)).hasOwnProperty('src'));
+        if (!o)
+            return;
+        var prop = Object.getOwnPropertyDescriptor(o, 'src');
+        // XXX volodymyr: some browsers (e.g. safari9) may lock access to src,
+        // solution copied from polyfill.video_source_access in html5.js
+        if (!prop.get && !prop.set)
+        {
+            prop.get = function(){
+                var src = video.getAttribute('src');
+                return src!=null ? src : '';
+            };
+            prop.set = function(s){
+                var el = document.createElement('source');
+                el.src = s||''; // will convert relative path into absolute uri
+                video.setAttribute('src', el.src);
+            };
+        }
+        Object.defineProperty(video, 'src', {
+            configurable: true,
+            enumerable: false,
+            set: function(src){
+                if (allow_cb(prop.get.call(video), src))
+                    prop.set.call(video, src);
+            },
+            get: prop.get,
+        });
+    }
     function get_default_src(sources){
         return sources &&
             sources.find(function(s){ return s.default; }) || sources[0];
@@ -168,22 +198,7 @@ function HlsProv(id){
     // XXX marka: mark html5 element to skip autodetection of dm/hls
     video.hola_dm_hls_attached = true;
     // XXX pavelki: hack to override ozee's wrong src set
-    var o = video;
-    while (o && !(o = Object.getPrototypeOf(o)).hasOwnProperty('src'));
-    if (o)
-    {
-        var prop = Object.getOwnPropertyDescriptor(o, 'src');
-        Object.defineProperty(video, 'src', {
-            configurable: true,
-            enumerable: false,
-            set: function(src){
-                if (src == prop.get.call(video)+'?')
-                    return;
-                prop.set.call(video, src);
-            },
-            get: prop.get,
-        });
-    }
+    on_video_src_change(video, function(from, to){ return to!=from+'?'; });
     var hls_params = {}, hola_log;
     this.ad_count = 0;
     if (jw)

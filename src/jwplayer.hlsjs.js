@@ -12,7 +12,7 @@ var script_conf = (function script_conf_init(){
     if (!script)
         return {};
     var rpercent = '{[=it.HOLA_REGISTER_PERCENT]}';
-    if (rpercent.startsWith('{['))
+    if (!rpercent.indexOf('{['))
     {
         if (!script.hasAttribute(attrs.register))
             return {};

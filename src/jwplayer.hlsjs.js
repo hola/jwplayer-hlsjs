@@ -162,6 +162,8 @@ function HlsProv(id){
     this.once = this.events.once.bind(this.events);
     this.removeEventListener = this.off = this.events.off.bind(this.events);
     this.trigger = this.emit = function(e){
+        if (!_this.attached)
+            return;
         var args = [].slice.call(arguments);
         _this.events.emit.apply(this.events, args);
         if (e!='all')
@@ -554,8 +556,6 @@ function HlsProv(id){
         // XXX pavelki: hack to remove pending segments
         delete hls.bufferController.segments;
         this.attached = false;
-        // XXX yurij: remove when detachMedia->bufferring issue fixed
-        this.setState('paused');
         return video;
     };
     this.setState = function(state){

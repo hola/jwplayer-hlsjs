@@ -152,8 +152,8 @@ function HlsProv(id){
             sources.find(function(s){ return s.default; }) || sources[0];
     }
     function _log(method, message){
-        if (_this.hls.hola_log && _this.hls.hola_log[method])
-            _this.hls.hola_log[method].call(_this.hls.hola_log, message);
+        if (_this.hls.holaLog && _this.hls.holaLog[method])
+            _this.hls.holaLog[method].call(_this.hls.holaLog, message);
     }
     // XXX marka: jwplayer inherits provider from DefaultProvider, so it will
     // override our inheritance from EventEmitter, do it manually
@@ -224,7 +224,7 @@ function HlsProv(id){
     ['debug', 'info', 'log', 'warn','error'].forEach(function(method){
         hls_params.debug[method] = _log.bind(null, method); });
     this.hls = hls = new Hls(hls_params);
-    hls.hola_log = hola_log;
+    hls.holaLog = hola_log;
     if (jw)
         jw.hls = hls;
     var _buffered, _duration, _position;

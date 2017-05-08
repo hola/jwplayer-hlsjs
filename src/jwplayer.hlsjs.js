@@ -45,6 +45,7 @@ var script_conf = (function script_conf_init(){
 function HlsProv(id){
     var jwplayer = E.jwplayer||window.jwplayer, Hls = E.Hls||window.Hls;
     var jwe = jwplayer.events, jw = id && jwplayer(id);
+    console.log('init hola/hls provider v'+E.VERSION);
     jw.provider = this;
     function empty_fn(name){ return function(){}; }
     var _this = this;
@@ -528,7 +529,7 @@ function HlsProv(id){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED,
             {currentQuality: level, levels: get_levels()});
     };
-    this.getName = function(){ return {name: 'dm/hls'}; };
+    this.getName = function(){ return {name: 'hola/hls'}; };
     this.get_position = function(){ return video.currentTime; };
     this.getQualityLevels = function(){ return get_levels(); };
     this.getCurrentQuality = function(){ return hls.loadLevel+1; };
@@ -573,7 +574,7 @@ function HlsProv(id){
     };
 }
 
-E.getName = function(){ return {name: 'dm/hls'}; };
+E.getName = function(){ return {name: 'hola/hls'}; };
 
 // XXX yurij: copied from zjwplayer3.js to not depend on our code
 function get_player_instances(){

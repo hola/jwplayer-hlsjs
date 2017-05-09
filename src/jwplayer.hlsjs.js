@@ -72,7 +72,8 @@ function HlsProv(id){
         this.hls_queued.seek = 0;
     };
     function hls_play(){
-        if (!(_this.hls_queued.play = _this.hls_state!='ready'))
+        if (!(_this.hls_queued.play = _this.hls_state!='ready') &&
+            _this.attached)
         {
             _this.hls_restore_pos();
             var promise = video.play();
@@ -162,8 +163,8 @@ function HlsProv(id){
     this.addEventListener = this.on = this.events.on.bind(this.events);
     this.once = this.events.once.bind(this.events);
     this.removeEventListener = this.off = this.events.off.bind(this.events);
-    this.trigger = this.emit = function(e){
-        if (!_this.attached)
+    this.trigger = this.emit = function(e, force){
+        if (!_this.attached && !_this.before_complete)
             return;
         var args = [].slice.call(arguments);
         _this.events.emit.apply(this.events, args);
@@ -283,8 +284,8 @@ function HlsProv(id){
     }
     function playback_complete(){
         _this.setState('complete');
-        _this.before_complete = false;
         _this.trigger(jwe.JWPLAYER_MEDIA_COMPLETE);
+        _this.before_complete = false;
     }
     var video_listeners = {
         durationchange: function(){

@@ -76,32 +76,35 @@ function HlsProv(id){
             video.dispatchEvent(new Event('seeking'));
         this.hls_queued.seek = 0;
     };
+    function video_play(){
+        var promise = video.play();
+        if (promise && promise.catch)
+        {
+            promise.catch(function(err){
+                console.warn(err);
+                // user gesture required to start playback
+                if (err.name=='NotAllowedError' &&
+                    video.hasAttribute('jw-gesture-required'))
+                {
+                    _this.trigger('autoplayFailed');
+                    video.setAttribute('autoplay-failed', 'failed');
+                }
+            });
+        }
+        else if (video.hasAttribute('jw-gesture-required'))
+        {
+            // autoplay isn't supported in older versions of Safari (<10)
+            // and Chrome (<53)
+            _this.trigger('autoplayFailed');
+            video.setAttribute('autoplay-failed', 'failed');
+        }
+    }
     function hls_play(){
         if (!(_this.hls_queued.play = _this.hls_state!='ready') &&
             _this.attached)
         {
             _this.hls_restore_pos();
-            var promise = video.play();
-            if (promise && promise.catch)
-            {
-                promise.catch(function(err){
-                    console.warn(err);
-                    // user gesture required to start playback
-                    if (err.name=='NotAllowedError' &&
-                        video.hasAttribute('jw-gesture-required'))
-                    {
-                        _this.trigger('autoplayFailed');
-                        video.setAttribute('autoplay-failed', 'failed');
-                    }
-                });
-            }
-            else if (video.hasAttribute('jw-gesture-required'))
-            {
-                // autoplay isn't supported in older versions of Safari (<10)
-                // and Chrome (<53)
-                _this.trigger('autoplayFailed');
-                video.setAttribute('autoplay-failed', 'failed');
-            }
+            video_play();
         }
     }
     function hls_load(src){
@@ -168,7 +171,7 @@ function HlsProv(id){
     this.addEventListener = this.on = this.events.on.bind(this.events);
     this.once = this.events.once.bind(this.events);
     this.removeEventListener = this.off = this.events.off.bind(this.events);
-    this.trigger = this.emit = function(e, force){
+    this.trigger = this.emit = function(e){
         if (!_this.attached && !_this.before_complete)
             return;
         var args = [].slice.call(arguments);
@@ -185,8 +188,9 @@ function HlsProv(id){
     this.attached = true;
     this.hls_state = 'idle';
     this.is_mobile = function(){
-        var ua = navigator.userAgent;
-        return /iP(hone|ad|od)/i.test(ua) || /Android/i.test(ua);
+        var ios, and, ua = navigator.userAgent;
+        if ((ios = /iP(hone|ad|od)/i.test(ua)) || (and = /Android/i.test(ua)))
+            return {is_ios: ios, is_android: and};
     };
     this.supports_captions = function(){
         var ua = navigator.userAgent;
@@ -196,7 +200,7 @@ function HlsProv(id){
     };
     var element = document.getElementById(id), container;
     var video = element ? element.querySelector('video') : undefined, hls;
-    var _is_mobile = this.is_mobile();
+    var try_play, can_play, _is_mobile = this.is_mobile();
     if (!video)
     {
         video = document.createElement('video');
@@ -334,7 +338,10 @@ function HlsProv(id){
                 get_duration_inf(), height: video.videoHeight,
                 width: video.videoWidth});
         },
-        canplay: function(){ _this.trigger(jwe.JWPLAYER_MEDIA_BUFFER_FULL); },
+        canplay: function(){
+            can_play = true;
+            _this.trigger(jwe.JWPLAYER_MEDIA_BUFFER_FULL);
+        },
         playing: function(){
             _this.setState('playing');
             if (!video.hasAttribute('jw-played'))
@@ -450,7 +457,10 @@ function HlsProv(id){
             levels: get_levels()
         });
     });
-    this.init = function(item){ video.setAttribute('jw-loaded', 'init'); };
+    this.init = function(item){
+        try_play = false;
+        video.setAttribute('jw-loaded', 'init');
+    };
     this.load = function(item){
         if (!this.attached)
             return;
@@ -467,6 +477,7 @@ function HlsProv(id){
             ['init', 'started'].includes(video_state))
         {
             var sc;
+            try_play = false;
             video.load();
             hls.stopLoad(hls.media && this.hls_state=='ready' &&
                 video_state=='init');
@@ -475,6 +486,17 @@ function HlsProv(id){
         }
         else
             hls_play();
+        if (_is_mobile && !played)
+        {
+            if (!try_play && (!_is_mobile.is_ios || can_play))
+            {
+                try_play = true;
+                can_play = false;
+                video_play();
+            }
+            if (!video.paused && this.state!='playing')
+                this.setState('loading');
+        }
     };
     this.play = function(){ hls_play(); };
     this.pause = function(){

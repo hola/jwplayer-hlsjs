@@ -40,8 +40,11 @@ var script_conf = (function script_conf_init(){
         console.info(provider_name+': '+attrs.register+' forced to '+rpercent+
             '% by localStorage configuration');
     }
+    var hls_params = {};
+    if ('{[=it.HOLA_WITH_CREDENTIALS]}'==1)
+        hls_params.xhrSetup = function(x){ x.withCredentials = true; };
     var autoinit = !embedded && !script.hasAttribute(attrs.manual_init);
-    return {autoinit: autoinit,
+    return {autoinit: autoinit, hls_params: hls_params,
         disabled: !rpercent||Math.random()*100>rpercent};
 })();
 
@@ -212,7 +215,7 @@ function HlsProv(id){
     video.hola_dm_hls_attached = true;
     // XXX pavelki: hack to override ozee's wrong src set
     on_video_src_change(video, function(from, to){ return to!=from+'?'; });
-    var hls_params = {}, hola_log;
+    var hls_params = script_conf.hls_params, hola_log;
     this.ad_count = 0;
     if (jw)
     {

@@ -215,7 +215,7 @@ function HlsProv(id){
     video.hola_dm_hls_attached = true;
     // XXX pavelki: hack to override ozee's wrong src set
     on_video_src_change(video, function(from, to){ return to!=from+'?'; });
-    var hls_params = script_conf.hls_params, hola_log;
+    var hls_params = script_conf.hls_params||{}, hola_log;
     this.ad_count = 0;
     if (jw)
     {

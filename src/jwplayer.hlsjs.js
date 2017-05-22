@@ -37,6 +37,8 @@ var script_conf = (function script_conf_init(){
             v[key] = parse_obj(v[key], opt);
         return v;
     }
+    // XXX pavlo: workaround for UglifyJS optimization
+    function is_set(v) { return v==1; }
     var attrs = {register: 'register-percent', manual_init: 'manual-init'};
     var script = document.currentScript||
         document.querySelector('#hola_jwplayer_hls_provider');
@@ -56,7 +58,7 @@ var script_conf = (function script_conf_init(){
             script.getAttribute(attrs.register)+' found');
         return {disabled: true};
     }
-    var embedded = '{[=it.HOLA_EMBEDDED_PROVIDER]}'==1;
+    var embedded = is_set('{[=it.HOLA_EMBEDDED_PROVIDER]}');
     // loader.js takes percent control on its side
     if (embedded)
         rpercent = 100;
@@ -77,7 +79,7 @@ var script_conf = (function script_conf_init(){
         hls_params = parse_obj(JSON.parse(hls_params_str),
             {func: true, re: true});
     } catch(e){}
-    if ('{[=it.HOLA_WITH_CREDENTIALS]}'==1)
+    if (is_set('{[=it.HOLA_WITH_CREDENTIALS]}'))
         hls_params.xhrSetup = function(x){ x.withCredentials = true; };
     var autoinit = !embedded && !script.hasAttribute(attrs.manual_init);
     return {autoinit: autoinit, hls_params: hls_params,

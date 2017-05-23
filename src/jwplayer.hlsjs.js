@@ -91,7 +91,8 @@ var script_conf = (function script_conf_init(){
 function HlsProv(id){
     var jwplayer = E.jwplayer||window.jwplayer, Hls = E.Hls||window.Hls;
     var jwe = jwplayer.events, jw = id && jwplayer(id);
-    console.log('init hola/hls provider v'+E.VERSION+' hls v'+Hls.version);
+    console.log('init hola/hls provider v'+E.VERSION+' hls v'+Hls.version+
+        (E.version ? ' hap v'+E.version : ''));
     jw.provider = this;
     function empty_fn(name){ return function(){}; }
     var _this = this;

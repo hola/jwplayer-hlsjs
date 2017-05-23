@@ -491,6 +491,16 @@ function HlsProv(id){
             currentQuality: hls.autoLevelEnabled ? 0 : hls.currentLevel+1,
             levels: get_levels()
         });
+        if (hls.levels && hls.levels.length)
+        {
+            var is_video = 0;
+            hls.levels.forEach(function(level){
+                is_video += +!!(level.videoCodec || !level.audioCodec &&
+                    (level.bitrate>64000 || level.width || level.height));
+            });
+            _this.trigger(jwe.JWPLAYER_MEDIA_TYPE, {mediaType: is_video ?
+                'video' : 'audio'});
+        }
     });
     hls.on(Hls.Events.LEVEL_SWITCH, function(e, data){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED, {

@@ -460,13 +460,15 @@ function HlsProv(id){
         return 0;
     }
     function get_levels(){
+        var levels = hls.levels||[];
         // level 0 mimics native jw's hls provider behavior
-        var levels = [{bitrate: 1, width: 1, height: 1, label: 'Auto'}];
-        hls.levels.forEach(function(level){
-            levels.push({bitrate: level.bitrate, height: level.height,
+        var res = levels.length>1 ? [{bitrate: 1, width: 1, height: 1,
+            label: 'Auto'}] : [];
+        levels.forEach(function(level){
+            res.push({bitrate: level.bitrate, height: level.height,
                 label: level_label(level), width: level.width});
         });
-        return levels;
+        return res;
     }
     hls.on(Hls.Events.ERROR, function(event, data){
         if (!data.fatal)

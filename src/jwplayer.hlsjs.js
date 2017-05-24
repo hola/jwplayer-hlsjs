@@ -460,10 +460,10 @@ function HlsProv(id){
         return 0;
     }
     function get_levels(){
-        var levels = hls.levels||[];
+        var levels = hls.levels||[], res = [];
         // level 0 mimics native jw's hls provider behavior
-        var res = levels.length>1 ? [{bitrate: 1, width: 1, height: 1,
-            label: 'Auto'}] : [];
+        if (levels.length>1)
+            res.push([{bitrate: 1, width: 1, height: 1, label: 'Auto'}]);
         levels.forEach(function(level){
             res.push({bitrate: level.bitrate, height: level.height,
                 label: level_label(level), width: level.width});
@@ -491,16 +491,15 @@ function HlsProv(id){
             currentQuality: hls.autoLevelEnabled ? 0 : hls.currentLevel+1,
             levels: get_levels()
         });
-        if (hls.levels && hls.levels.length)
-        {
-            var is_video = 0;
-            hls.levels.forEach(function(level){
-                is_video += +!!(level.videoCodec || !level.audioCodec &&
-                    (level.bitrate>64000 || level.width || level.height));
-            });
-            _this.trigger(jwe.JWPLAYER_MEDIA_TYPE, {mediaType: is_video ?
-                'video' : 'audio'});
-        }
+        var levels, is_video = 0;
+        if (!(levels = hls.levels))
+            return;
+        levels.forEach(function(level){
+            is_video += +!!(level.videoCodec || !level.audioCodec &&
+                (level.bitrate>64000 || level.width || level.height));
+        });
+        _this.trigger(jwe.JWPLAYER_MEDIA_TYPE, {mediaType: is_video ?
+            'video' : 'audio'});
     });
     hls.on(Hls.Events.LEVEL_SWITCH, function(e, data){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED, {

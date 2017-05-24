@@ -79,8 +79,6 @@ var script_conf = (function script_conf_init(){
         hls_params = parse_obj(JSON.parse(hls_params_str),
             {func: true, re: true});
     } catch(e){}
-    if (is_set('{[=it.HOLA_WITH_CREDENTIALS]}'))
-        hls_params.xhrSetup = function(x){ x.withCredentials = true; };
     var autoinit = !embedded && !script.hasAttribute(attrs.manual_init);
     return {autoinit: autoinit, hls_params: hls_params,
         disabled: !rpercent||Math.random()*100>rpercent};

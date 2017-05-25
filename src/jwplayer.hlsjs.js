@@ -4,7 +4,7 @@ var E = module.exports = HlsProv;
 var ls;
 try { ls = window.localStorage; } catch(e){}
 var provider_name = 'Hola JW HLS provider';
-var provider_attached = false, provider_disabled = false;
+var provider_attached = false;
 var script_conf = (function script_conf_init(){
     // XXX vadiml copied from pkg/util/conv.js to avoid dependency
     function parse_leaf(v, opt){
@@ -690,7 +690,7 @@ E.supports = function(src){
 
 E.attach = function(){
     var jwplayer = E.jwplayer||window.jwplayer;
-    provider_disabled = false;
+    E.disabled = false;
     if (!provider_attached)
     {
         provider_attached = true;
@@ -702,7 +702,7 @@ E.attach = function(){
 E.detach = function(){
     // we don't remove provider from list, just set it as disabled so it will
     // return false in supports()
-    provider_disabled = true;
+    E.disabled = true;
 };
 
 // XXX vadiml copied from loader.js&zjwplayer3.js to not depend on our code.

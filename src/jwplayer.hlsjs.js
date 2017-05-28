@@ -699,10 +699,14 @@ E.attach = function(){
     }
 };
 
-E.detach = function(){
+E.detach = function(hp){
     // we don't remove provider from list, just set it as disabled so it will
     // return false in supports()
     E.disabled = true;
+    if (!hp || !hp.attached)
+        return;
+    hp.setState('idle');
+    hp.detachMedia();
 };
 
 // XXX vadiml copied from loader.js&zjwplayer3.js to not depend on our code.

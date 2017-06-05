@@ -1,88 +1,7 @@
 'use strict';
 var EventEmitter = require('eventemitter3');
 var E = module.exports = HlsProv;
-var ls;
-try { ls = window.localStorage; } catch(e){}
-var provider_name = 'Hola JW HLS provider';
 var provider_attached = false;
-var script_conf = (function script_conf_init(){
-    // XXX vadiml copied from pkg/util/conv.js to avoid dependency
-    function parse_leaf(v, opt){
-        if (!v || typeof v!='object' || Object.keys(v).length!=1)
-            return v;
-        if (v.__Function__ && opt.func)
-            return new Function('', '"use strict";return ('+v.__Function__+');')();
-        if (v.__RegExp__ && opt.re)
-        {
-            var parsed = /^\/(.*)\/(\w*)$/.exec(v.__RegExp__);
-            if (!parsed)
-                throw new Error('failed parsing regexp');
-            return new RegExp(parsed[1], parsed[2]);
-        }
-        return v;
-    }
-    function parse_obj(v, opt){
-        if (!v || typeof v!='object')
-            return v;
-        if (Array.isArray(v))
-        {
-            for (var i = 0; i<v.length; i++)
-                v[i] = parse_obj(v[i], opt);
-            return v;
-        }
-        var v2 = parse_leaf(v, opt);
-        if (v2!==v)
-            return v2;
-        for (var key in v)
-            v[key] = parse_obj(v[key], opt);
-        return v;
-    }
-    // XXX pavlo: workaround for UglifyJS optimization
-    function is_set(v) { return v==1; }
-    var attrs = {register: 'register-percent', manual_init: 'manual-init'};
-    var script = document.currentScript||
-        document.querySelector('#hola_jwplayer_hls_provider');
-    if (!script)
-        return {};
-    var rpercent = '{[=it.HOLA_REGISTER_PERCENT]}';
-    if (!rpercent.indexOf('{['))
-    {
-        if (!script.hasAttribute(attrs.register))
-            return {};
-        rpercent = +script.getAttribute(attrs.register);
-    }
-    if (isNaN(rpercent)||rpercent<0||rpercent>100)
-    {
-        console.error(provider_name+': invalid '+attrs.register+
-            ' attribute, expected a value between 0 and 100 but '+
-            script.getAttribute(attrs.register)+' found');
-        return {disabled: true};
-    }
-    var embedded = is_set('{[=it.HOLA_EMBEDDED_PROVIDER]}');
-    // loader.js takes percent control on its side
-    if (embedded)
-        rpercent = 100;
-    if (window.location.search && window.URLSearchParams)
-    {
-        var params = new window.URLSearchParams(window.location.search);
-        rpercent = +params.get('hola_provider_register_percent')||rpercent;
-    }
-    if (ls && ls.getItem('hola_provider_register_percent'))
-    {
-        rpercent = +ls.getItem('hola_provider_register_percent');
-        console.info(provider_name+': '+attrs.register+' forced to '+rpercent+
-            '% by localStorage configuration');
-    }
-    var hls_params_str = '{[=it.HOLA_HLS_PARAMS]}';
-    var hls_params = {};
-    try {
-        hls_params = parse_obj(JSON.parse(hls_params_str),
-            {func: true, re: true});
-    } catch(e){}
-    var autoinit = !embedded && !script.hasAttribute(attrs.manual_init);
-    return {autoinit: autoinit, hls_params: hls_params,
-        disabled: !rpercent||Math.random()*100>rpercent};
-})();
 
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
@@ -252,7 +171,7 @@ function HlsProv(id){
     video.hola_dm_hls_attached = true;
     // XXX pavelki: hack to override ozee's wrong src set
     on_video_src_change(video, function(from, to){ return to!=from+'?'; });
-    var hls_params = script_conf.hls_params||{}, hola_log;
+    var hls_params = E.hls_params||{}, hola_log;
     this.ad_count = 0;
     if (jw)
     {
@@ -733,8 +652,3 @@ E.reload_jwplayer_instances = function(){
 };
 
 E.VERSION = '__VERSION__';
-
-if (script_conf.disabled)
-    E.attach = E.detach = E.supports = function(){};
-else if (script_conf.autoinit)
-    E.attach();

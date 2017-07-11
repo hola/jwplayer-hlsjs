@@ -59,6 +59,9 @@ function HlsProv(id){
         }
     }
     function hls_play(){
+        var dbg;
+        if (dbg = hls_params.debug)
+            dbg.log('hls_play state: '+_this.hls_state+' att:'+_this.attached);
         if (!(_this.hls_queued.play = _this.hls_state!='ready') &&
             _this.attached)
         {
@@ -74,6 +77,9 @@ function HlsProv(id){
         if (_this.level_cb)
             hls.off(Hls.Events.LEVEL_LOADED, _this.level_cb);
         _this.level_cb = function(){
+            var dbg;
+            if (dbg = hls_params.debug)
+                dbg.log('hls play queued on level_cb:'+_this.hls_queued.play);
             hls.off(Hls.Events.LEVEL_LOADED, _this.level_cb);
             _this.level_cb = undefined;
             _this.hls_state = 'ready';

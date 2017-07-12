@@ -40,6 +40,7 @@ function HlsProv(id){
         if (promise && promise.catch)
         {
             promise.catch(function(err){
+                hls_log('video_play failed with '+err);
                 console.warn(err);
                 // user gesture required to start playback
                 if (err.name=='NotAllowedError' &&
@@ -58,10 +59,13 @@ function HlsProv(id){
             video.setAttribute('autoplay-failed', 'failed');
         }
     }
-    function hls_play(){
+    function hls_log(msg){
         var dbg;
         if (dbg = hls_params.debug)
-            dbg.log('hls_play state: '+_this.hls_state+' att:'+_this.attached);
+            dbg.log(msg);
+    }
+    function hls_play(){
+        hls_log('hls_play state: '+_this.hls_state+' att:'+_this.attached);
         if (!(_this.hls_queued.play = _this.hls_state!='ready') &&
             _this.attached)
         {
@@ -77,9 +81,7 @@ function HlsProv(id){
         if (_this.level_cb)
             hls.off(Hls.Events.LEVEL_LOADED, _this.level_cb);
         _this.level_cb = function(){
-            var dbg;
-            if (dbg = hls_params.debug)
-                dbg.log('hls play queued on level_cb:'+_this.hls_queued.play);
+            hls_log('hls play queued on level_cb:'+_this.hls_queued.play);
             hls.off(Hls.Events.LEVEL_LOADED, _this.level_cb);
             _this.level_cb = undefined;
             _this.hls_state = 'ready';
@@ -237,10 +239,7 @@ function HlsProv(id){
                 return;
             var loaded_lvl = levels.find(function(lvl){ return lvl.details; });
             live = loaded_lvl && !!loaded_lvl.details.live;
-        } catch(e){
-            if (hls_params.debug)
-                hls_params.debug.log('is_live failed with '+e);
-        }
+        } catch(e){ hls_log('is_live failed with '+e); }
         return live;
     }
     function get_buffered(){
@@ -545,8 +544,8 @@ function HlsProv(id){
     this.attachMedia = function(){
         if (this.before_complete)
             return playback_complete();
-        if (this.ad_count && hls_params.debug)
-            hls_params.debug.log('jwprovider attach inside ad '+this.ad_count);
+        if (this.ad_count)
+            hls_log('jwprovider attach inside ad '+this.ad_count);
         this.attached = true;
         hls.attachMedia(video);
     };

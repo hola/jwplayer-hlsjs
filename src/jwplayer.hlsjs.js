@@ -96,7 +96,7 @@ function HlsProv(id){
     }
     function on_video_src_change(video, allow_cb){
         var o = video;
-        while (o && !(o = Object.getPrototypeOf(o)).hasOwnProperty('src'));
+        for (; o && !o.hasOwnProperty('src'); o = Object.getPrototypeOf(o));
         if (!o)
             return;
         var prop = Object.getOwnPropertyDescriptor(o, 'src');

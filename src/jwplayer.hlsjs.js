@@ -168,6 +168,7 @@ function HlsProv(id){
     var element = document.getElementById(id), container;
     var video = element ? element.querySelector('video') : undefined, hls;
     var try_play, can_play, _is_mobile = this.is_mobile();
+    var visual_quality = {reason: 'initial choice', mode: 'auto'};
     if (!video)
     {
         video = document.createElement('video');
@@ -387,7 +388,7 @@ function HlsProv(id){
         var levels = hls.levels||[], res = [];
         // level 0 mimics native jw's hls provider behavior
         if (levels.length>1)
-            res.push([{bitrate: 1, width: 1, height: 1, label: 'Auto'}]);
+            res.push({label: 'Auto'});
         levels.forEach(function(level){
             res.push({bitrate: level.bitrate, height: level.height,
                 label: level_label(level), width: level.width});
@@ -426,11 +427,20 @@ function HlsProv(id){
             'video' : 'audio'});
     });
     hls.on(Hls.Events.LEVEL_SWITCH, function(e, data){
+        var levels = get_levels();
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED, {
             // level 0 is dummy for 'Auto' option in jwplayer's UI
             currentQuality: hls.manual_level==-1 ? 0 : data.level+1,
-            levels: get_levels()
+            levels: levels,
         });
+        var level = levels[data.level+1];
+        visual_quality.level = level;
+        visual_quality.level.index = data.level+1;
+        visual_quality.level.label = hls.manual_level==-1 ? 'auto' :
+            level.label;
+        visual_quality.reason = visual_quality.reason||'auto';
+        _this.trigger('visualQuality', visual_quality);
+        visual_quality.reason = '';
     });
     this.init = function(item){
         try_play = false;
@@ -531,6 +541,7 @@ function HlsProv(id){
             hls.loadLevel = hls.manual_level;
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED,
             {currentQuality: level, levels: get_levels()});
+        visual_quality.reason = 'api';
     };
     this.getName = function(){ return {name: 'hola/hls'}; };
     this.get_position = function(){ return video.currentTime; };

@@ -395,6 +395,15 @@ function HlsProv(id){
         });
         return res;
     }
+    function get_level(level){
+        var levels = hls.levels||[];
+        level = level||hls.currentLevel;
+        return {
+            // level 0 is dummy for 'Auto' option in jwplayer's UI
+            jw: hls.manual_level==-1 || levels.length<2 ? 0 : level+1,
+            real: levels.length<2 ? 0 : level+1,
+        };
+    }
     hls.on(Hls.Events.ERROR, function(event, data){
         if (!data.fatal)
             return;
@@ -413,7 +422,7 @@ function HlsProv(id){
     });
     hls.on(Hls.Events.MANIFEST_LOADED, function(){
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVELS, {
-            currentQuality: hls.autoLevelEnabled ? 0 : hls.currentLevel+1,
+            currentQuality: get_level().jw,
             levels: get_levels()
         });
         var levels, is_video = 0;
@@ -427,17 +436,16 @@ function HlsProv(id){
             'video' : 'audio'});
     });
     hls.on(Hls.Events.LEVEL_SWITCH, function(e, data){
-        var levels = get_levels();
+        var levels = get_levels(), level_id = get_level(data.level);
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED, {
-            // level 0 is dummy for 'Auto' option in jwplayer's UI
-            currentQuality: hls.manual_level==-1 ? 0 : data.level+1,
+            currentQuality: level_id.jw,
             levels: levels,
         });
-        var level = levels[data.level+1];
+        var level = levels[level_id.real];
         visual_quality.level = level;
-        visual_quality.level.index = data.level+1;
-        visual_quality.level.label = hls.manual_level==-1 ? 'auto' :
-            level.label;
+        visual_quality.level.index = level_id.real;
+        visual_quality.level.label = hls.manual_level==-1 && levels.length>1 ?
+            'auto' : level.label;
         visual_quality.reason = visual_quality.reason||'auto';
         _this.trigger('visualQuality', visual_quality);
         visual_quality.reason = '';
@@ -546,7 +554,7 @@ function HlsProv(id){
     this.getName = function(){ return {name: 'hola/hls'}; };
     this.get_position = function(){ return video.currentTime; };
     this.getQualityLevels = function(){ return get_levels(); };
-    this.getCurrentQuality = function(){ return hls.loadLevel+1; };
+    this.getCurrentQuality = function(){ return get_level(hls.loadLevel).jw; };
     this.getAudioTracks = empty_fn('getAudioTracks');
     this.getCurrentAudioTrack = empty_fn('getCurrentAudioTrack');
     this.setCurrentAudioTrack = empty_fn('setCurrentAudioTrack');

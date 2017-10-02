@@ -35,8 +35,27 @@ function HlsProv(id){
             video.dispatchEvent(new Event('seeking'));
         this.hls_queued.seek = 0;
     };
+    function check_playback_started(video){
+        if (video.paused)
+            return void hls_log('video play refused');
+        function rm_listeners(){
+            video.removeEventListener('playing', listener);
+            video.removeEventListener('pause', listener);
+            video.removeEventListener('abort', listener);
+            video.removeEventListener('error', listener);
+        }
+        function listener(e){
+            rm_listeners();
+            if (e.type!='playing')
+                hls_log('play() was interrupted by a "'+e.type+'" event');
+        }
+        video.addEventListener('playing', listener);
+        video.addEventListener('abort', listener);
+        video.addEventListener('error', listener);
+        video.addEventListener('pause', listener);
+    }
     function video_play(){
-        var promise = video.play();
+        var promise = video.play()||check_playback_started(video);
         if (promise && promise.catch)
         {
             promise.catch(function(err){

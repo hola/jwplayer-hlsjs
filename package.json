@@ -1,7 +1,7 @@
 {
   "name": "@hola.org/jwplayer-hlsjs",
   "description": "hls.js provider for jwplayer",
-  "version": "0.0.78",
+  "version": "0.0.79",
   "license": "ISC",
   "homepage": "https://github.com/hola/jwplayer-hlsjs",
   "scripts": {

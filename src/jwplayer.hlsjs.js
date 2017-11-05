@@ -2,12 +2,29 @@
 var EventEmitter = require('eventemitter3');
 var E = module.exports = HlsProv;
 var provider_attached = false;
+// jwplayer v8+ dropped exposing jwplayer.events
+var jwe = {
+    JWPLAYER_MEDIA_BEFORECOMPLETE: 'beforeComplete',
+    JWPLAYER_MEDIA_BUFFER: 'bufferChange',
+    JWPLAYER_MEDIA_BUFFER_FULL: 'bufferFull',
+    JWPLAYER_MEDIA_COMPLETE: 'complete',
+    JWPLAYER_MEDIA_ERROR: 'mediaError',
+    JWPLAYER_MEDIA_LEVELS: 'levels',
+    JWPLAYER_MEDIA_LEVEL_CHANGED: 'levelsChanged',
+    JWPLAYER_MEDIA_META: 'meta',
+    JWPLAYER_MEDIA_SEEK: 'seek',
+    JWPLAYER_MEDIA_SEEKED: 'seeked',
+    JWPLAYER_MEDIA_TIME: 'time',
+    JWPLAYER_MEDIA_TYPE: 'mediaType',
+    JWPLAYER_PLAYER_STATE: 'state',
+    JWPLAYER_PROVIDER_FIRST_FRAME: 'providerFirstFrame',
+};
 
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
 function HlsProv(id){
     var jwplayer = E.jwplayer||window.jwplayer, Hls = E.Hls||window.Hls;
-    var jwe = jwplayer.events, jw = id && jwplayer(id);
+    var jw = id && jwplayer(id);
     console.log('init hola/hls provider v'+E.VERSION+' hls v'+Hls.version+
         (E.version ? ' hap v'+E.version : ''));
     jw.provider = this;

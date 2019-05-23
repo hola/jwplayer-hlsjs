@@ -326,6 +326,8 @@ function HlsProv(id){
             // XXX pavelki: add checking of playlist
             if (video.textTracks.length)
                 video.textTracks.onaddtrack();
+            _this.trigger(jwe.JWPLAYER_MEDIA_TYPE, {mediaType: video.videoHeight ?
+                'video' : 'audio'});
         },
         loadedmetadata: function(){
             if (video.muted)
@@ -461,15 +463,6 @@ function HlsProv(id){
             currentQuality: get_level().jw,
             levels: get_levels()
         });
-        var levels, is_video = 0;
-        if (!(levels = hls.levels))
-            return;
-        levels.forEach(function(level){
-            is_video += +!!(level.videoCodec || !level.audioCodec &&
-                (level.bitrate>64000 || level.width || level.height));
-        });
-        _this.trigger(jwe.JWPLAYER_MEDIA_TYPE, {mediaType: is_video ?
-            'video' : 'audio'});
     });
     hls.on(Hls.Events.LEVEL_SWITCH, function(e, data){
         var levels = get_levels(), level_id = get_level(data.level);

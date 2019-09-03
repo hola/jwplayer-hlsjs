@@ -606,7 +606,9 @@ function HlsProv(id){
             this.level_cb = undefined;
         }
         // XXX pavelki: hack to remove pending segments
-        delete hls.bufferController.segments;
+        if (hls.bufferController !== undefined) {
+            delete hls.bufferController.segments;
+        }
         this.attached = false;
         return video;
     };

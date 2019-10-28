@@ -22,7 +22,7 @@ var jwe = {
 
 // XXX arik: protect against exceptions in api. currently jwplayer will be
 // stuck + add test
-function HlsProv(id){
+function HlsProv(id, _playerConfig, mediaElement){
     var jwplayer = E.jwplayer||window.jwplayer, Hls = E.Hls||window.Hls;
     var jw = id && jwplayer(id);
     console.log('init hola/hls provider v'+E.VERSION+' hls v'+Hls.version+
@@ -201,8 +201,12 @@ function HlsProv(id){
             || / (Chrome|Version)\/\d+(\.\d+)+.* Safari\/\d+(\.\d+)+/.test(ua)
             || /Firefox\/(\d+(?:\.\d+)+)/.test(ua);
     };
-    var element = document.getElementById(id), container;
-    var video = element ? element.querySelector('video') : undefined, hls;
+    var video = mediaElement;
+    if (!video) {
+        var element = document.getElementById(id);
+        video = element ? element.querySelector('video') : undefined;
+    }
+    var hls, container;
     var try_play, can_play, _is_mobile = this.is_mobile();
     var visual_quality = {reason: 'initial choice', mode: 'auto'};
     if (!video)
@@ -211,6 +215,7 @@ function HlsProv(id){
         if (_is_mobile)
             video.setAttribute('jw-gesture-required', '');
     }
+    this.video = video;
     video.className = 'jw-video jw-reset';
     // XXX marka: mark html5 element to skip autodetection of dm/hls
     video.hola_dm_hls_attached = true;
@@ -546,7 +551,6 @@ function HlsProv(id){
     // eg. http://www.ozee.com/shows/muddha-mandaram#hola_mode=cdn&hola_zone=ozee_hap
     this.resize = function(width, height, stretching){};
     this.remove = function(){
-        this.in_container = false;
         hls.stopLoad();
         this.source = undefined;
         if (container === video.parentNode)
@@ -566,8 +570,9 @@ function HlsProv(id){
     this.getContainer = function(){ return container; };
     this.setContainer = function(element){
         container = element;
-        container.appendChild(video);
-        this.in_container = true;
+        if (this.video.parentNode !== element) {
+            container.appendChild(video);
+        }
     };
     hls.manual_level = -1;
     this.setCurrentQuality = function(level){

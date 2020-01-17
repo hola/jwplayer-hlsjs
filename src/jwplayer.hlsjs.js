@@ -469,7 +469,7 @@ function HlsProv(id, _playerConfig, mediaElement){
             levels: get_levels()
         });
     });
-    hls.on(Hls.Events.LEVEL_SWITCH, function(e, data){
+    hls.on(Hls.Events.LEVEL_SWITCHED, function(e, data){
         var levels = get_levels(), level_id = get_level(data.level);
         _this.trigger(jwe.JWPLAYER_MEDIA_LEVEL_CHANGED, {
             currentQuality: level_id.jw,
